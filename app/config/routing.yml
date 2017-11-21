@@ -1,0 +1,4 @@
+neo:
+    resource: "@NeoBundle/Controller/"
+    type:     annotation
+    prefix:   /

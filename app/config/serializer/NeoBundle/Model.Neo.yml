@@ -1,0 +1,5 @@
+FOS\NeoBundle\Model\Dummy:
+    exclusion_policy: ALL
+    group: dummy
+    properties:
+        hello:
