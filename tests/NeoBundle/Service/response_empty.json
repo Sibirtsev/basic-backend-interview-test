@@ -1,0 +1,6 @@
+{
+  "links" : {
+    "self" : "https://api.nasa.gov/neo/rest/v1/feed?start_date=2017-11-19&end_date=2017-11-21&detailed=false&api_key=N7LkblDsc5aen05FJqBQ8wU4qSdmsftwJagVK7UD"
+  },
+  "element_count" : 0
+}

@@ -17,3 +17,6 @@ parameters:
 
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
+
+    nasa_api_url: https://api.nasa.gov/neo/rest/v1/feed
+    nasa_api_key: N7LkblDsc5aen05FJqBQ8wU4qSdmsftwJagVK7UD
