@@ -18,3 +18,4 @@
 .idea/
 composer.phar
 tests/build/
+*.DS_Store*

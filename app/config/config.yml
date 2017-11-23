@@ -103,3 +103,14 @@ jms_serializer:
                 namespace_prefix: FOS\NeoBundle
                 path: %kernel.root_dir%/config/serializer/NeoBundle
         auto_detection: true
+
+# MongoBD
+doctrine_mongodb:
+    connections:
+        default:
+            server: "%mongodb_server%"
+            options: {}
+    default_database: neo
+    document_managers:
+        default:
+            auto_mapping: true
