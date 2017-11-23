@@ -2,9 +2,13 @@ services:
 #    neo.example:
 #        class: NeoBundle\Example
 #        arguments: ["@service_id", "plain_value", "%parameter%"]
+    guzzle.service:
+          class: GuzzleHttp\Client
 
     neo.nasa.service:
         class: NeoBundle\Service\NasaNeoService
+        public: true
         arguments:
+            - "@guzzle.service"
             - "%nasa_api_url%"
             - "%nasa_api_key%"

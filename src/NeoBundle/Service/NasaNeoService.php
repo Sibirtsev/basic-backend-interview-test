@@ -25,11 +25,13 @@ class NasaNeoService
     /**
      * NasaNeoService constructor.
      *
-     * @param string $apiUrl
-     * @param string $apiKey
+     * @param HttpClient $client
+     * @param string     $apiUrl
+     * @param string     $apiKey
      */
-    public function __construct(string $apiUrl, string $apiKey)
+    public function __construct(\GuzzleHttp\Client $client, string $apiUrl, string $apiKey)
     {
+        $this->client = $client;
         $this->apiUrl = $apiUrl;
         $this->apiKey = $apiKey;
     }
@@ -45,9 +47,7 @@ class NasaNeoService
         }
         $numDays = $endDate->diff($startDate)->d;
 
-        $client = $this->getHttpClient();
-
-        $response = $client->get($this->apiUrl, ['query' => [
+        $response = $this->client->get($this->apiUrl, ['query' => [
             'api_key' => $this->apiKey,
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
@@ -78,6 +78,9 @@ class NasaNeoService
 
             foreach ($rawObjects as $rawObject) {
                 $object = $this->transform($rawObject);
+                if (empty($object)) {
+                    continue;
+                }
                 $object['date'] = $day;
                 $objects[] = $object;
             }
@@ -97,26 +100,35 @@ class NasaNeoService
     protected function transform(array $rawObject)
     {
         $object = [];
-        // @todo add checking keys
+
+        if (!array_key_exists('neo_reference_id', $rawObject)) {
+            return [];
+        }
         $object['reference'] = intval($rawObject['neo_reference_id']);
-        $object['name'] = $rawObject['name'];
-        $object['speed'] = $rawObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'];
-        $object['is_hazardous'] = $rawObject['is_potentially_hazardous_asteroid'];
+
+        if (!array_key_exists('name', $rawObject)) {
+            return [];
+        }
+        $object['name'] = strval($rawObject['name']);
+
+        if (!array_key_exists('close_approach_data', $rawObject)) {
+            return [];
+        }
+        if (!is_array($rawObject['close_approach_data'])) {
+            return [];
+        }
+        $closeApproachData = reset($rawObject['close_approach_data']);
+        if (!array_key_exists('relative_velocity', $closeApproachData)
+            || !array_key_exists('kilometers_per_hour', $closeApproachData['relative_velocity'])) {
+            return [];
+        }
+        $object['speed'] = floatval($closeApproachData['relative_velocity']['kilometers_per_hour']);
+
+        if (!array_key_exists('is_potentially_hazardous_asteroid', $rawObject)) {
+            return [];
+        }
+        $object['is_hazardous'] = boolval($rawObject['is_potentially_hazardous_asteroid']);
 
         return $object;
-    }
-
-    protected function getHttpClient()
-    {
-        if ($this->client instanceof HttpClient) {
-            return $this->client;
-        }
-        $this->client = new HttpClient();
-        return $this->client;
-    }
-
-    public function setHttpClient(HttpClient $client)
-    {
-        $this->client = $client;
     }
 }

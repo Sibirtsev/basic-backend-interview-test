@@ -10,7 +10,14 @@ class NasaNeoServiceTest extends TestCase
 {
     public function testCreate()
     {
-        $service = new NasaNeoService('test', 'test');
+        $mockHttp = $this->getGuzzleMock(
+            'get',
+            [],
+            200,
+            'response_full.json'
+        );
+
+        $service = new NasaNeoService($mockHttp, 'test', 'test');
         $this->assertTrue(is_object($service));
         $this->assertTrue($service instanceof NasaNeoService);
     }
@@ -36,21 +43,97 @@ class NasaNeoServiceTest extends TestCase
             'response_full.json'
         );
 
-        $service = new NasaNeoService('test', 'test');
-        $service->setHttpClient($mockHttp);
+        $service = new NasaNeoService($mockHttp,'test', 'test');
         $result = $service->fetchData('2017-11-19', '2017-11-21');
+
         $this->assertTrue(is_array($result));
         $this->assertCount(34, $result);
+
+        // Check fields are exists
         $this->assertArrayHasKey('date', $result[0]);
         $this->assertArrayHasKey('reference', $result[0]);
         $this->assertArrayHasKey('name', $result[0]);
         $this->assertArrayHasKey('speed', $result[0]);
         $this->assertArrayHasKey('is_hazardous', $result[0]);
+
+        // Check fields
+        $this->assertTrue(is_string($result[0]['date']));
+        $this->assertEquals('2017-11-19', $result[0]['date']);
+
+        $this->assertTrue(is_int($result[0]['reference']));
+        $this->assertEquals(3734648, $result[0]['reference']);
+
+        $this->assertTrue(is_string($result[0]['name']));
+        $this->assertEquals('(2015 VF106)', $result[0]['name']);
+
+        $this->assertTrue(is_float($result[0]['speed']));
+        $this->assertEquals(35557.5333370378, $result[0]['speed']);
+
+        $this->assertTrue(is_bool($result[0]['is_hazardous']));
+        $this->assertEquals(false, $result[0]['is_hazardous']);
+    }
+
+    public function testMalformedAnswer()
+    {
+        $testCallArg = [
+            'test',
+            [
+                'query' => [
+                    'api_key' => 'test',
+                    'start_date' => '2017-11-20',
+                    'end_date' => '2017-11-20',
+                    'detailed' => 'false',
+                ]
+            ]
+        ];
+
+        $mockHttp = $this->getGuzzleMock(
+            'get',
+            $testCallArg,
+            200,
+            'response_malformed.json'
+        );
+
+        $service = new NasaNeoService($mockHttp,'test', 'test');
+        $result = $service->fetchData('2017-11-20', '2017-11-20');
+
+        $this->assertTrue(is_array($result));
+        $this->assertCount(1, $result);
+
+        // Check fields are exists
+        $this->assertArrayHasKey('date', $result[0]);
+        $this->assertArrayHasKey('reference', $result[0]);
+        $this->assertArrayHasKey('name', $result[0]);
+        $this->assertArrayHasKey('speed', $result[0]);
+        $this->assertArrayHasKey('is_hazardous', $result[0]);
+
+        // Check fields
+        $this->assertTrue(is_string($result[0]['date']));
+        $this->assertEquals('2017-11-20', $result[0]['date']);
+
+        $this->assertTrue(is_int($result[0]['reference']));
+        $this->assertEquals(3469637, $result[0]['reference']);
+
+        $this->assertTrue(is_string($result[0]['name']));
+        $this->assertEquals('(2009 SP171)', $result[0]['name']);
+
+        $this->assertTrue(is_float($result[0]['speed']));
+        $this->assertEquals(49746.4091509666, $result[0]['speed']);
+
+        $this->assertTrue(is_bool($result[0]['is_hazardous']));
+        $this->assertEquals(false, $result[0]['is_hazardous']);
     }
 
     public function testWrongDates()
     {
-        $service = new NasaNeoService('test', 'test');
+        $mockHttp = $this->getGuzzleMock(
+            'get',
+            [],
+            200,
+            'response_full.json'
+        );
+
+        $service = new NasaNeoService($mockHttp, 'test', 'test');
         $result = $service->fetchData('2017-11-21', '2017-11-19');
         $this->assertTrue(is_array($result));
         $this->assertCount(0, $result);
@@ -79,8 +162,8 @@ class NasaNeoServiceTest extends TestCase
             'response_full.json'
         );
 
-        $service = new NasaNeoService('test', 'test');
-        $service->setHttpClient($mockHttp);
+        $service = new NasaNeoService($mockHttp,'test', 'test');
+
         $result = $service->fetchData('2017-11-19', '2017-11-21');
         $this->assertTrue(is_array($result));
         $this->assertCount(0, $result);
@@ -109,8 +192,7 @@ class NasaNeoServiceTest extends TestCase
             'response_empty.json'
         );
 
-        $service = new NasaNeoService('test', 'test');
-        $service->setHttpClient($mockHttp);
+        $service = new NasaNeoService($mockHttp, 'test', 'test');
         $result = $service->fetchData('2017-11-19', '2017-11-21');
         $this->assertTrue(is_array($result));
         $this->assertCount(0, $result);
@@ -122,8 +204,15 @@ class NasaNeoServiceTest extends TestCase
         $endDay = new \DateTimeImmutable('yesterday');
         $startDay = $endDay->sub(new \DateInterval('P2D'));
 
+        $mockHttp = $this->getGuzzleMock(
+            'get',
+            [],
+            200,
+            'response_full.json'
+        );
+
         $mock = $this->getMockBuilder('NeoBundle\Service\NasaNeoService')
-            ->setConstructorArgs(['test', 'test'])
+            ->setConstructorArgs([$mockHttp, 'test', 'test'])
             ->setMethods(['fetchData'])
             ->getMock();
 
@@ -154,12 +243,12 @@ class NasaNeoServiceTest extends TestCase
 
         $responseMock = $this->getMockBuilder('\GuzzleHttp\Psr7\Response')
             ->getMock();
-        $responseMock->expects($this->once())->method('getStatusCode')
+        $responseMock->expects($this->any())->method('getStatusCode')
             ->willReturn($responseStatusCode);
         $responseMock->expects($this->any())->method('getBody')
             ->willReturn(file_get_contents($responseBodyFilename, true));
 
-        $mockHttp->expects($this->once())->method('__call')
+        $mockHttp->expects($this->any())->method('__call')
             ->with($requestMethod, $requestArguments)
             ->willReturn($responseMock);
         return $mockHttp;
