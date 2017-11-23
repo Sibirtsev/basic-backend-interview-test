@@ -3,6 +3,7 @@
 namespace NeoBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use JMS\Serializer\Annotation\Groups;
 
 /**
  * @MongoDB\Document(repositoryClass="NeoBundle\Repository\NeoRepository")
@@ -16,26 +17,31 @@ class Neo
 
     /**
      * @MongoDB\Field(type="date")
+     * @Groups({"neo"})
      */
     protected $date;
 
     /**
      * @MongoDB\Field(type="int")
+     * @Groups({"neo"})
      */
     protected $reference;
 
     /**
      * @MongoDB\Field(type="string")
+     * @Groups({"neo"})
      */
     protected $name;
 
     /**
      * @MongoDB\Field(type="float")
+     * @Groups({"neo"})
      */
     protected $speed;
 
     /**
      * @MongoDB\Field(type="boolean")
+     * @Groups({"neo"})
      */
     protected $isHazardous;
 

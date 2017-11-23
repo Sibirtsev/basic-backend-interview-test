@@ -3,3 +3,19 @@ FOS\NeoBundle\Model\Dummy:
     group: dummy
     properties:
         hello:
+            expose: true
+
+FOS\NeoBundle\Model\Neo:
+    exclusion_policy: ALL
+    group: neo
+    properties:
+        date:
+            expose: true
+        reference:
+            expose: true
+        name:
+            expose: true
+        speed:
+            expose: true
+        is_hazardous:
+            expose: true

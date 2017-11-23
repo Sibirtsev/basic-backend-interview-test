@@ -2,7 +2,7 @@ SYMFONY_CLI=php bin/console
 COMPOSER_CLI=php ./composer.phar
 YARN_CLI=yarn run encore
 
-.PHONY: all install start stop clean tests composer-install composer-update doctrine-create
+.PHONY: all install start stop clean fixtures tests composer-install composer-update doctrine-create
 
 all:
 	install
@@ -19,6 +19,9 @@ stop:
 
 clean:
 	$(SYMFONY_CLI) cache:clear
+
+fixtures:
+	php bin/console doctrine:mongodb:fixtures:load -e test
 
 tests:
 	vendor/phpunit/phpunit/phpunit
