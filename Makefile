@@ -1,15 +1,13 @@
 SYMFONY_CLI=php bin/console
-COMPOSER_CLI=php ./composer.phar
-YARN_CLI=yarn run encore
+COMPOSER_CLI=composer
 
-.PHONY: all install start stop clean fixtures tests composer-install composer-update doctrine-create
+.PHONY: all install start stop clean fixtures tests composer-install composer-update
 
 all:
 	install
 
 install:
 	composer-install
-	doctrine-create
 
 start:
 	php bin/console server:start
@@ -31,7 +29,3 @@ composer-install:
 
 composer-update:
 	$(COMPOSER_CLI) update
-
-doctrine-create:
-	$(SYMFONY_CLI) doctrine:database:create --force
-
