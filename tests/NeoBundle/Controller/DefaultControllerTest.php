@@ -30,7 +30,7 @@ class DefaultControllerTest extends WebTestCase
 
         $data = json_decode($response, true);
 
-        $this->assertCount(7, $data);
+        $this->assertCount(5, $data);
 
         foreach ($data as $row) {
             $this->assertArrayHasKey('date', $row);
@@ -107,5 +107,55 @@ class DefaultControllerTest extends WebTestCase
         $this->assertEquals('9', $data['name']);
         $this->assertEquals(51., $data['speed']);
         $this->assertTrue($data['is_hazardous']);
+    }
+
+
+    public function testBestYearNonHazardous()
+    {
+        $client = static::createClient();
+
+        $crawler = $client->request('GET', '/neo/best-year');
+        $responseWithoutParam = $client->getResponse()->getContent();
+
+        $crawler = $client->request('GET', '/neo/best-year?hazardous=false');
+        $responseWithParam = $client->getResponse()->getContent();
+
+        $crawler = $client->request('GET', '/neo/best-year?hazardous=hello');
+        $responseWithWrongParam = $client->getResponse()->getContent();
+
+        $this->assertEquals($responseWithoutParam, $responseWithParam);
+        $this->assertEquals($responseWithoutParam, $responseWithWrongParam);
+
+        $this->assertNotEmpty($responseWithoutParam);
+        $this->assertJson($responseWithoutParam);
+
+        $data = json_decode($responseWithoutParam, true);
+
+        $this->assertArrayHasKey('best-year', $data);
+
+        $this->assertEquals(2017, $data['best-year']);
+    }
+
+
+    public function testBestYearHazardous()
+    {
+        $client = static::createClient();
+
+        $crawler = $client->request('GET', '/neo/best-year');
+        $responseWithoutParam = $client->getResponse()->getContent();
+
+        $crawler = $client->request('GET', '/neo/best-year?hazardous=true');
+        $responseWithParam = $client->getResponse()->getContent();
+
+        $this->assertNotEquals($responseWithoutParam, $responseWithParam);
+
+        $this->assertNotEmpty($responseWithParam);
+        $this->assertJson($responseWithParam);
+
+        $data = json_decode($responseWithParam, true);
+
+        $this->assertArrayHasKey('best-year', $data);
+
+        $this->assertEquals(2016, $data['best-year']);
     }
 }

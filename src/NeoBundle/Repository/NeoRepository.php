@@ -17,4 +17,26 @@ class NeoRepository extends DocumentRepository
 
         return $query->execute()->toArray();
     }
+
+    public function getBestYear($isHazardous)
+    {
+        $builder = $this->createAggregationBuilder();
+        $builder
+            ->match()
+                ->field('isHazardous')
+                ->equals($isHazardous)
+            ->group()
+                ->field('id')
+                ->expression($builder->expr()->year('$date'))
+                ->field('count')
+                ->sum(1)
+            ->sort(['count' => 'DESC'])
+            ->limit(1)
+            ->project()
+                ->excludeFields(['count'])
+                ->field('id')
+        ;
+
+        return $builder->execute()->toArray();
+    }
 }
