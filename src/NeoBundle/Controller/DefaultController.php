@@ -73,11 +73,33 @@ class DefaultController extends FOSRestController
         /** @var NeoRepository $repository */
         $repository = $dm->getRepository('NeoBundle:Neo');
 
-        $object = $repository->getBestYear($isHazardous);
-        $object = reset($object);
-        if (!is_array($object) || !array_key_exists('_id', $object)) {
+        $bestYear = $repository->getBestYear($isHazardous);
+        if (empty($bestYear)) {
             throw new NotFoundHttpException();
         }
-        return ['best-year' => $object['_id']];
+        return ['best-year' => $bestYear];
+    }
+
+    /**
+     * @Route("/neo/best-month", name="best-month")
+     * @param Request $request
+     * @return mixed
+     */
+    public function bestMonthAction(Request $request)
+    {
+        $isHazardous = $request->query->get('hazardous', 'false');
+        $isHazardous = $isHazardous === 'true' ? true : false;
+
+        /** @var DocumentManager $dm */
+        $dm = $this->get('doctrine_mongodb')->getManager();
+
+        /** @var NeoRepository $repository */
+        $repository = $dm->getRepository('NeoBundle:Neo');
+
+        $bestMonth = $repository->getBestMonth($isHazardous);
+        if (empty($bestMonth)) {
+            throw new NotFoundHttpException();
+        }
+        return ['best-month' => $bestMonth];
     }
 }
