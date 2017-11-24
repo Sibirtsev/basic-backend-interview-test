@@ -1,4 +1,39 @@
-mongo:
-  image: mongo:3.4.10
-  ports:
+version: '2'
+
+services:
+  mongo:
+    image: mongo:3.4.10
+    ports:
       - "27017:27017"
+    networks:
+      - app-network
+
+  php:
+    build: ./docker/php
+    links:
+      - mongo
+    depends_on:
+      - mongo
+    volumes:
+      - .:/var/www/mcmakler.de
+    #ports:
+    #  - "9001:9000"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.13
+    links:
+      - php
+    depends_on:
+      - php
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
